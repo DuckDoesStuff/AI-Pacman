@@ -30,8 +30,8 @@ def read_input_file(input_file):
     return N, M, graph, start_x, start_y
 
 def write_result_to_file(file_path, result):
-    if not os.path.exists('./results'):
-        os.makedirs('./results')
+    if not os.path.exists('./output'):
+        os.makedirs('./output')
     with open(file_path, 'w') as file:
         file.write(result)
 
@@ -105,32 +105,6 @@ def bfs(graph, start_x, start_y, target_x, target_y, N, M, is_ghost=0):
 
     return None  # No path to food
 
-def bfs_pac(graph, start_x, start_y, target_x, target_y, N, M, is_ghost=0):
-    visited = [[False for _ in range(M)] for _ in range(N)]
-    queue = Queue()
-    queue.put((start_x, start_y))
-    visited[start_x][start_y] = True
-    parent = {(start_x, start_y): None}
-
-    while not queue.empty():
-        x, y = queue.get()
-
-        if x == target_x and y == target_y:
-            path = []
-            current = (x, y)
-            while current is not None:
-                path.append(current)
-                current = parent[current]
-            return path[::-1]
-        
-        for adj_x, adj_y in get_adjacent_tiles(x, y, N, M, graph, is_ghost):
-            if not visited[adj_x][adj_y]:
-                queue.put((adj_x, adj_y))
-                visited[adj_x][adj_y] = True
-                parent[(adj_x, adj_y)] = (x, y)
-
-    return None  # No path to food
-
 def find_nearest_food(graph, start_x, start_y, N, M):
     nearest_food = None
     min_distance = float('inf')
@@ -178,7 +152,14 @@ class Game:
         self.game_points = 0
         pygame.init()
         self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
+        pygame.display.set_caption("Pacman Game")
+        clock = pygame.time.Clock()
+        fps = 60
+        
         while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = DEAD
             nearest_food = find_nearest_food(self.graph, self.pacman[0], self.pacman[1], self.N, self.M)
             if nearest_food is None:
                 self.game_state = WIN
@@ -203,6 +184,8 @@ class Game:
 
             graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)
             pygame.display.flip()
+            pygame.event.pump()
+            clock.tick(fps)
             time.sleep(1)
 
         return self.game_points
@@ -211,7 +194,14 @@ class Game:
         self.game_points = 0
         pygame.init()
         self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
+        pygame.display.set_caption("Pacman Game")
+        clock = pygame.time.Clock()
+        fps = 60
+        
         while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = DEAD
             nearest_food = find_nearest_food(self.graph, self.pacman[0], self.pacman[1], self.N, self.M)
             if nearest_food is None:
                 self.game_state = WIN
@@ -236,6 +226,8 @@ class Game:
 
             graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)
             pygame.display.flip()
+            pygame.event.pump()
+            clock.tick(fps)
             time.sleep(1)
            
         return self.game_points
@@ -244,8 +236,14 @@ class Game:
         self.game_points = 0
         pygame.init()
         self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
-
+        pygame.display.set_caption("Pacman Game")
+        clock = pygame.time.Clock()
+        fps = 60
+        
         while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = DEAD
             nearest_food = find_nearest_food(self.graph, self.pacman[0], self.pacman[1], self.N, self.M)
             if nearest_food is None:
                 self.game_state = WIN
@@ -253,7 +251,10 @@ class Game:
                 
             for i, ghost in enumerate(self.ghosts):
                 ghost_x, ghost_y = ghost
-                self.graph[ghost_x][ghost_y] = 0
+                if (ghost_x, ghost_y) in self.foods:
+                    self.graph[ghost_x][ghost_y] = FOOD
+                else:
+                    self.graph[ghost_x][ghost_y] = 0
                 adj_tiles = get_adjacent_tiles(
                     ghost[0],
                     ghost[1],
@@ -265,6 +266,8 @@ class Game:
                 new_x, new_y = random.choice(adj_tiles)
                 self.ghosts[i] = (new_x, new_y)
                 self.graph[new_x][new_y] = GHOST
+                if(self.ghosts[i] == self.pacman):
+                    self.game_state = DEAD
                 
             path = bfs_with_visibility_limit(self.graph, self.pacman[0], self.pacman[1],
                                             nearest_food[0], nearest_food[1], self.N, self.M)
@@ -276,7 +279,9 @@ class Game:
             # Subtract 1 points for every move
             self.game_points -= 1
             # Move pacman 1 step
+            self.graph[self.pacman[0]][self.pacman[1]] = 0
             self.pacman = path[1]
+            self.graph[self.pacman[0]][self.pacman[1]] = 5
             
             # If pacman ate the food
             if(self.pacman == (nearest_food[0], nearest_food[1])):
@@ -286,19 +291,27 @@ class Game:
 
             graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)
             pygame.display.flip()
+            pygame.event.pump()
+            clock.tick(fps)
             time.sleep(1)
 
         return self.game_points
 
     def play_game_level_4(self):
-        display_game(self.graph)
+        self.game_points = 0
         pygame.init()
         self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
+        pygame.display.set_caption("Pacman Game")
+        clock = pygame.time.Clock()
+        fps = 60
+        
         while self.game_state == RUNNING:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = DEAD
             if self.game_state == DEAD:
                 break
             
-            self.graph[self.pacman[0]][self.pacman[1]] = 0
             if len(self.foods) == 0:
                 self.game_state = WIN
                 break
@@ -311,7 +324,7 @@ class Game:
                 else:
                     self.graph[ghost_x][ghost_y] = 0
                 ghost_path = bfs(self.graph, ghost_x, ghost_y, self.pacman[0], self.pacman[1], self.N, self.M, is_ghost=True)
-                if len(ghost_path) >= 2:
+                if ghost_path is not None and len(ghost_path) >= 2:
                     # Ghost take a step
                     ghost = ghost_path[1]
                     self.ghosts[i] = ghost
@@ -322,7 +335,7 @@ class Game:
             # Pacman find shortest path to clostest food
             pacman_path = []
             for food in self.foods:
-                pacman_path.append(bfs_pac(self.graph, self.pacman[0], self.pacman[1], food[0], food[1], self.N, self.M, is_ghost=False))
+                pacman_path.append(bfs(self.graph, self.pacman[0], self.pacman[1], food[0], food[1], self.N, self.M, is_ghost=False))
             
             valid_path = [path for path in pacman_path if path]
             closest_food = min(valid_path, key=len, default=[]) if pacman_path else None
@@ -332,6 +345,7 @@ class Game:
                 break
                 
             # Pacman move to that food
+            self.graph[self.pacman[0]][self.pacman[1]] = 0
             self.pacman = closest_food[1]
             self.game_points -= 1
             self.graph[self.pacman[0]][self.pacman[1]] = 5
@@ -343,7 +357,9 @@ class Game:
                 
             graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)    
             pygame.display.flip()
-            time.sleep(0.5)
+            pygame.event.pump()
+            clock.tick(fps)
+            time.sleep(1)
 
         return self.game_points, self.game_state
 
@@ -358,5 +374,5 @@ class Game:
         result += "\n\n" 
         result += f"Game points: {self.game_points}\n"
         result += f"Game result: {game_result}\n"
-        output_file = f"./results/result{level}.txt"
+        output_file = f"./output/result{level}.txt"
         write_result_to_file(output_file, result)
