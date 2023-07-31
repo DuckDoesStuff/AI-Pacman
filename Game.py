@@ -1,5 +1,6 @@
 from queue import Queue
 import os
+import random
 import time
 import graphic
 import pygame
@@ -32,7 +33,7 @@ def write_result_to_file(file_path, result):
 def is_valid_move(x, y, N, M, graph, is_ghost=0):
     return 0 <= x < N and 0 <= y < M and graph[x][y] != WALL and ((graph[x][y] != GHOST) or is_ghost)
 
-def get_adjacent_tiles(x, y, N, M, graph, is_ghost):
+def get_adjacent_tiles(x, y, N, M, graph, is_ghost=0):
     adjacent_tiles = []
     dx = [-1, 1, 0, 0]
     dy = [0, 0, -1, 1]
@@ -88,7 +89,8 @@ def bfs(graph, start_x, start_y, target_x, target_y, N, M, is_ghost=0):
                 path.append(current)
                 current = parent[current]
             return path[::-1]
-
+        
+        
         for adj_x, adj_y in get_adjacent_tiles(x, y, N, M, graph, is_ghost):
             if not visited[adj_x][adj_y]:
                 queue.put((adj_x, adj_y))
@@ -110,6 +112,7 @@ def find_nearest_food(graph, start_x, start_y, N, M):
                     nearest_food = (i, j)
 
     return nearest_food
+
 def calculate_game_points(path_length, food_collected):
     movement_penalty = path_length
 
@@ -145,7 +148,6 @@ class Game:
         self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
         while True:
             nearest_food = find_nearest_food(self.graph, self.pacman[0], self.pacman[1], self.N, self.M)
-            print(nearest_food)
             if nearest_food is None:
                 self.game_state = WIN
                 break
@@ -208,19 +210,36 @@ class Game:
 
     def play_game_level_3(self):
         self.game_points = 0
+        pygame.init()
+        self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
         while True:
             nearest_food = find_nearest_food(self.graph, self.pacman[0], self.pacman[1], self.N, self.M)
             if nearest_food is None:
                 self.game_state = WIN
                 break
-
+                
+            for i, ghost in enumerate(self.ghosts):
+                ghost_x, ghost_y = ghost
+                self.graph[ghost_x][ghost_y] = 0
+                adj_tiles = get_adjacent_tiles(
+                    ghost[0],
+                    ghost[1],
+                    self.N,
+                    self.M,
+                    self.graph,
+                    is_ghost=True
+                )
+                new_x, new_y = random.choice(adj_tiles)
+                self.ghosts[i] = (new_x, new_y)
+                self.graph[new_x][new_y] = GHOST
+                
             path = bfs_with_visibility_limit(self.graph, self.pacman[0], self.pacman[1],
                                             nearest_food[0], nearest_food[1], self.N, self.M)
             if path is None or len(path) < 2:
                 print("No path to food!")
                 self.game_state = DEAD
-                return
+                break
 
             # Subtract 1 points for every move
             self.game_points -= 1
@@ -265,6 +284,7 @@ class Game:
             # Pacman find shortest path to clostest food
             pacman_path = []
             for food in self.foods:
+                print(food, self.pacman)
                 pacman_path.append(bfs(self.graph, self.pacman[0], self.pacman[1], food[0], food[1], self.N, self.M, is_ghost=False))
             
             valid_path = [path for path in pacman_path if path]

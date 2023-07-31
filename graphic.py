@@ -12,3 +12,5 @@ def draw_board(pac_x, pac_y, board, screen, height, width):
                 pygame.draw.rect(screen,'blue', (j * num2, i* num1, 23, 23))
             if (i, j) == (pac_x, pac_y):
                 pygame.draw.circle(screen,'yellow', (j * num2 + (0.5*num2), i*num1 +(0.5*num1)), 10)
+            if board[i][j] == 3:
+                pygame.draw.circle(screen,'purple', (j * num2 + (0.5*num2), i*num1 +(0.5*num1)), 10)
