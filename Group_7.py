@@ -1,6 +1,8 @@
 from queue import Queue
 import copy
 import time
+import os
+import graphic as graphics
 
 EMPTY = 0
 WALL = 1
@@ -138,19 +140,17 @@ def play_gameL4(graph, start_x, start_y, N, M):
         if pacman in foods:
             foods.remove(pacman)
             game_points += 20
+
+        graphics.draw_board(pacman[0], pacman[1], graph)
+        time.sleep(1)
             
-        # display_game(graph)
-        # time.sleep(3)
-        
-    # if game_state == WIN:
-    #     print("Pacman ate all the food!")
-    # elif game_state == DEAD:
-    #     print("Pacman was captured by the ghosts")
     
     return game_points, game_state
 
 
 def write_result_to_file(file_path, result):
+    if not os.path.exists('./results'):
+        os.makedirs('./results')
     with open(file_path, 'w') as file:
         file.write(result)
 
@@ -160,21 +160,7 @@ def display_game(graph):
     print()
 
 def main():
-    # for i in range(1, 6):
-    #     print("Map ", i)
-    #     input_file = f"./maps/map{i}.txt"
-    #     N, M, graph, start_x, start_y = read_input_file(input_file)
-
-    #     result = f"Level {i}:\n"
-    #     result += "\n".join(" ".join(str(cell) for cell in row) for row in graph)
-    #     result += "\n\n"
-
-    #     game_points = play_game(copy.deepcopy(graph), start_x, start_y, N, M)
-    #     result += f"Game points: {game_points}\n"
-
-    #     output_file = f"./results/result{i}.txt"
-    #     write_result_to_file(output_file, result)
-    N, M, graph, start_x, start_y = read_input_file('./maps/map10.txt')
+    N, M, graph, start_x, start_y = read_input_file('./maps/map.txt')
     game_points, game_states = play_gameL4(copy.deepcopy(graph), start_x, start_y, N, M)
     if game_states == WIN:
         game_result = 'WIN'
@@ -187,6 +173,7 @@ def main():
     result += f"Game result: {game_result}\n"
     output_file = f"./results/result{10}.txt"
     write_result_to_file(output_file, result)
+
     
     
 
