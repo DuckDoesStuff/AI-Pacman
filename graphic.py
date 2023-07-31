@@ -12,18 +12,3 @@ def draw_board(pac_x, pac_y, board, screen, height, width):
                 pygame.draw.rect(screen,'blue', (j * num2, i* num1, 23, 23))
             if (i, j) == (pac_x, pac_y):
                 pygame.draw.circle(screen,'yellow', (j * num2 + (0.5*num2), i*num1 +(0.5*num1)), 10)
-
-# run = True
-# while run:
-#     timer.tick(fps)
-#     screen.fill('black')
-#     draw_board(start_x, start_y, graph)
-#     start_x+=1
-#     time.sleep(1)
-
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             run = False
-
-#     pygame.display.flip()
-# pygame.quit()

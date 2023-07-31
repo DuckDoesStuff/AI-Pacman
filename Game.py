@@ -155,18 +155,16 @@ class Game:
                 print("No path to food!")
                 self.game_state = DEAD
                 return
-            
-            # Calculate path length and food collected
-            path_length = len(path) - 1
-            food_collected = 0
 
-            for x, y in path:
-                if self.graph[x][y] == 2:
-                    food_collected += 1
-
-            # Calculate game points
-            self.game_points += calculate_game_points(path_length, food_collected)
+            # Subtract 1 points for every move
+            self.game_points -= 1
+            # Move pacman 1 step
             self.pacman = path[1]
+            
+            # If pacman ate the food
+            if(self.pacman == (nearest_food[0], nearest_food[1])):
+                self.game_points += 20
+                
             self.graph[self.pacman[0]][self.pacman[1]] = 0
 
             graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)
@@ -191,11 +189,18 @@ class Game:
                 self.game_state = DEAD
                 break
 
-            self.game_points += 20 - len(path)
+            # Subtract 1 points for every move
+            self.game_points -= 1
+            # Move pacman 1 step
             self.pacman = path[1]
-   
+            
+            # If pacman ate the food
+            if(self.pacman == (nearest_food[0], nearest_food[1])):
+                self.game_points += 20
+                
             self.graph[self.pacman[0]][self.pacman[1]] = 0
-            graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)    
+
+            graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)
             pygame.display.flip()
             time.sleep(1)
            
@@ -217,10 +222,20 @@ class Game:
                 self.game_state = DEAD
                 return
 
-            self.game_points +=  20 - len(path)
-            self.pacman[0], self.pacman[1] = path[1]
-
+            # Subtract 1 points for every move
+            self.game_points -= 1
+            # Move pacman 1 step
+            self.pacman = path[1]
+            
+            # If pacman ate the food
+            if(self.pacman == (nearest_food[0], nearest_food[1])):
+                self.game_points += 20
+                
             self.graph[self.pacman[0]][self.pacman[1]] = 0
+
+            graphic.draw_board(self.pacman[0], self.pacman[1], self.graph, self.screen, HEIGHT, WIDTH)
+            pygame.display.flip()
+            time.sleep(1)
 
         return self.game_points
 
