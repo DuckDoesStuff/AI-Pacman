@@ -1,21 +1,9 @@
 import pygame
-import sys
-import Group_7 as g
-import time
 
-# Khởi tạo Pygame
-pygame.init()
-
-# Các hằng số màn hình
-WIDTH, HEIGHT = 750, 500
-timer = pygame.time.Clock()
-screen = pygame.display.set_mode([WIDTH, HEIGHT])
-fps = 60
-
-def draw_board(pac_x, pac_y, board):
-    screen.fill((0,0,0))
-    num1 = (HEIGHT)//20
-    num2 = (WIDTH-250)//20
+def draw_board(pac_x, pac_y, board, screen, height, width):
+    screen.fill((0, 0, 0))
+    num1 = (height)//20
+    num2 = (width-250)//20
     for i in range (len(board)):
         for j in range (len(board[i])):
             if board[i][j] == 2:
